@@ -1,0 +1,55 @@
+{
+	"name": "custom_sfra_miaw",
+	"version": "0.0.1",
+	"description": "New overlay cartridge",
+	"main": "index.js",
+	"scripts": {
+		"lint": "sgmf-scripts --lint js && sgmf-scripts --lint css",
+		"lint:fix": "sgmf-scripts --lint js --fix && sgmf-scripts --lint css --fix",
+		"upload": "sgmf-scripts --upload -- ",
+		"uploadCartridge": "sgmf-scripts --uploadCartridge custom_sfra_miaw",
+		"compile:js": "sgmf-scripts --compile js",
+		"compile:scss": "sgmf-scripts --compile css",
+		"build-react": "webpack --config webpack.react.config.js"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.26.0",
+		"@babel/preset-env": "^7.26.0",
+		"@babel/preset-react": "^7.26.3",
+		"autoprefixer": "^10.4.16",
+		"babel-loader": "^9.2.1",
+		"chai": "^3.5.0",
+		"css-loader": "^6.11.0",
+		"css-minimizer-webpack-plugin": "^5.0.1",
+		"eslint": "^8.56.0",
+		"eslint-config-airbnb-base": "^15.0.0",
+		"eslint-plugin-import": "^2.29.0",
+		"mini-css-extract-plugin": "^2.7.6",
+		"mocha": "^10.0.0",
+		"nyc": "^15.1.0",
+		"postcss-loader": "^7.0.0",
+		"proxyquire": "1.7.4",
+		"sass": "^1.69.7",
+		"sass-loader": "^13.3.2",
+		"sgmf-scripts": "^2.0.0",
+		"sinon": "^17.0.1",
+		"style-loader": "^4.0.0",
+		"stylelint": "^15.4.0",
+		"stylelint-config-standard-scss": "^10.0.0",
+		"webpack-cli": "^5.1.4",
+		"webpack-remove-empty-scripts": "^1.0.4"
+	},
+	"browserslist": [
+		"last 2 versions",
+		"ie >= 10"
+	],
+	"dependencies": {
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-icons": "^5.4.0",
+		"uuid": "^11.0.3"
+	},
+	"paths": {
+		"base": "../storefront-reference-architecture/cartridges/app_storefront_base/"
+	}
+}
