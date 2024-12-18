@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { FaPaperPlane, FaSignOutAlt } from 'react-icons/fa';
-import './MiawCalls.css';
+import './MiawChat.css';
 
-const MiawCalls = () => {
+const MiawChat = () => {
 	const [accessToken, setAccessToken] = useState(null);
 	const [error, setError] = useState(null);
 	const [conversationId, setConversationId] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [inputText, setInputText] = useState('');
 	const [sseReader, setSSEReader] = useState(null);
+	const [sessionEnded, setSessionEnded] = useState(false);
+	const [isTyping, setIsTyping] = useState(false);
 
 	const apiBaseUrl = 'https://rcg-ido-spring24.my.salesforce-scrt.com/iamessage/api/v2';
 	const sseEndpoint = 'https://sse-cors-proxy-f4797ef2b8f2.herokuapp.com/sse';
@@ -24,7 +26,6 @@ const MiawCalls = () => {
 					console.log('Access token already exists:', accessToken);
 					console.log('Starting SSE stream...');
 					await startSSE();
-					console.log('SSE stream started successfully.');
 				}
 			} catch (err) {
 				console.error('Error during initialization:', err.message);
@@ -93,6 +94,7 @@ const MiawCalls = () => {
 				},
 			});
 			const reader = response.body.getReader();
+			console.log('SSE stream started successfully.');
 			setSSEReader(reader);
 			const decoder = new TextDecoder();
 			let partialData = '';
@@ -106,11 +108,17 @@ const MiawCalls = () => {
 					if (line.startsWith('data:')) {
 						try {
 							const eventData = JSON.parse(line.replace('data:', '').trim());
-							if (eventData.conversationEntry?.entryType === 'Message') {
+							const entryType = eventData.conversationEntry?.entryType;
+							if (entryType === 'Message') {
 								const role = eventData.conversationEntry.sender?.role === 'EndUser' ? 'EndUser' : 'ChatBot';
 								const payload = JSON.parse(eventData.conversationEntry.entryPayload);
 								const textValue = payload?.abstractMessage?.staticContent?.text;
 								setMessages((prev) => [...prev, { id: uuidv4(), role, text: textValue.replace(/\n/g, '<br/>') }]);
+								setIsTyping(false); // Remove typing indicator on message
+							} else if (entryType === 'TypingStartedIndicator') {
+								setIsTyping(true);
+							} else if (entryType === 'TypingStoppedIndicator') {
+								setIsTyping(false);
 							}
 						} catch {}
 					}
@@ -134,6 +142,7 @@ const MiawCalls = () => {
 			});
 			if (sseReader) sseReader.cancel();
 			setConversationId(null);
+			setSessionEnded(true);
 			console.log('Conversation ended');
 		} catch (err) {
 			setError(err.message);
@@ -175,30 +184,47 @@ const MiawCalls = () => {
 			<div className='chat-window'>
 				{messages.map((msg) => (
 					<div key={msg.id} className={`chat-bubble ${msg.role === 'EndUser' ? 'user' : 'assistant'}`}>
-						{msg.role !== 'EndUser' && <div className='avatar' />}
 						<div className='bubble-text' dangerouslySetInnerHTML={{ __html: msg.text }} />
 					</div>
 				))}
+				{isTyping && (
+					<div className='typing-section'>
+						<span className='typing-message'>Agent is typing...</span>
+						<div className='wave'>
+							<span className='dot'></span>
+							<span className='dot'></span>
+							<span className='dot'></span>
+						</div>
+					</div>
+				)}
+				{sessionEnded && (
+					<div className='session-ended-message'>
+						<p>The agent session has ended.</p>
+					</div>
+				)}
 			</div>
-			<div className='chat-input-container'>
-				<div className='chat-input'>
-					<input
-						type='text'
-						value={inputText}
-						onChange={(e) => setInputText(e.target.value)}
-						onKeyPress={handleKeyPress}
-						placeholder='Start typing...'
-					/>
-					<button onClick={sendMessage} className='send-button'>
-						<FaPaperPlane />
-					</button>
-					<button onClick={endSession} className='end-button'>
-						<FaSignOutAlt />
-					</button>
+			<div className='chat-input-area'>
+				<div className='chat-input-container'>
+					<div className='chat-input'>
+						<input
+							type='text'
+							value={inputText}
+							onChange={(e) => setInputText(e.target.value)}
+							onKeyPress={handleKeyPress}
+							placeholder='Start typing...'
+							disabled={sessionEnded}
+						/>
+						<button onClick={sendMessage} className='send-button' disabled={sessionEnded}>
+							<FaPaperPlane />
+						</button>
+						<button onClick={endSession} className='end-button' disabled={sessionEnded}>
+							<FaSignOutAlt />
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
 	);
 };
 
-export default MiawCalls;
+export default MiawChat;

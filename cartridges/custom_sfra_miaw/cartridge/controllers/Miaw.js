@@ -2,8 +2,8 @@
 
 var server = require('server');
 
-server.get('Test', function (req, res, next) {
-	res.render('miaw/test');
+server.get('Start', function (req, res, next) {
+	res.render('miaw/chat');
 	next();
 });
 
