@@ -1,0 +1,4 @@
+<isdecorate template="common/layout/page">
+  <div id="react-component" data-svc-deployment="MIAW_Custom_for_Kiehls_Apex_v3"></div>
+  <script type="text/javascript" src="${URLUtils.staticURL('js/react-bundle-v3.js')}"></script>
+</isdecorate>

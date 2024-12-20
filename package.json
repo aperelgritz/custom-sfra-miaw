@@ -10,7 +10,8 @@
 		"uploadCartridge": "sgmf-scripts --uploadCartridge custom_sfra_miaw",
 		"compile:js": "sgmf-scripts --compile js",
 		"compile:scss": "sgmf-scripts --compile css",
-		"build-react": "webpack --config webpack.react.config.js"
+		"build-react": "webpack --config webpack.react.config.js",
+		"build-react-v3": "webpack --config webpack.react.v3.config.js"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.26.0",

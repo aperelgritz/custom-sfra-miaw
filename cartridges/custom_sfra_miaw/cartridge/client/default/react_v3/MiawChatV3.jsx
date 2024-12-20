@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { FaPaperPlane, FaSignOutAlt } from 'react-icons/fa';
-import './MiawChat.css';
+import './MiawChatV3.css';
 
-const MiawChat = ({ svcDeployment }) => {
+const MiawChatV3 = ({ svcDeployment }) => {
 	const [accessToken, setAccessToken] = useState(null);
 	const [error, setError] = useState(null);
 	const [conversationId, setConversationId] = useState(null);
@@ -111,10 +111,57 @@ const MiawChat = ({ svcDeployment }) => {
 							const entryType = eventData.conversationEntry?.entryType;
 							if (entryType === 'Message') {
 								const role = eventData.conversationEntry.sender?.role === 'EndUser' ? 'EndUser' : 'ChatBot';
-								const payload = JSON.parse(eventData.conversationEntry.entryPayload);
-								const textValue = payload?.abstractMessage?.staticContent?.text;
-								setMessages((prev) => [...prev, { id: uuidv4(), role, text: textValue.replace(/\n/g, '<br/>') }]);
-								setIsTyping(false); // Remove typing indicator on message
+								const escapedPayload = eventData.conversationEntry.entryPayload;
+								const unescapedPayload = JSON.parse(escapedPayload);
+								const textValue = unescapedPayload?.abstractMessage?.staticContent?.text;
+
+								// Extract JSON and text
+								let parsedText;
+								const jsonStart = textValue.indexOf('{');
+								const jsonEnd = textValue.lastIndexOf('}') + 1;
+								if (jsonStart !== -1 && jsonEnd > jsonStart) {
+									const jsonText = textValue.slice(jsonStart, jsonEnd);
+									const textBefore = textValue.slice(0, jsonStart).trim();
+									const textAfter = textValue.slice(jsonEnd).trim();
+
+									const normalizedJson = jsonText.replace(/\\n/g, '').replace(/\\"/g, '"');
+									const jsonData = JSON.parse(normalizedJson);
+
+									const productCarousel = (
+										<div className='product-carousel'>
+											{jsonData.products.map((product, idx) => (
+												<div key={idx} className='carousel-item'>
+													<img src={product.product_image} alt={product.product_name} className='product-image' />
+													<a href={product.product_url} target='_blank' rel='noopener noreferrer'>
+														{product.product_name}
+													</a>
+													<p>{product.product_price}</p>
+													<p>{product.reason}</p>
+												</div>
+											))}
+										</div>
+									);
+
+									parsedText = (
+										<div>
+											{textBefore && <p>{textBefore}</p>}
+											{productCarousel}
+											{textAfter && <p>{textAfter}</p>}
+										</div>
+									);
+								} else {
+									parsedText = <span>{textValue}</span>;
+								}
+
+								setMessages((prev) => [
+									...prev,
+									{
+										id: uuidv4(),
+										role,
+										text: parsedText,
+									},
+								]);
+								setIsTyping(false);
 							} else if (entryType === 'TypingStartedIndicator') {
 								setIsTyping(true);
 							} else if (entryType === 'TypingStoppedIndicator') {
@@ -184,7 +231,7 @@ const MiawChat = ({ svcDeployment }) => {
 			<div className='chat-window'>
 				{messages.map((msg) => (
 					<div key={msg.id} className={`chat-bubble ${msg.role === 'EndUser' ? 'user' : 'assistant'}`}>
-						<div className='bubble-text' dangerouslySetInnerHTML={{ __html: msg.text }} />
+						<div className='bubble-text'>{msg.text}</div>
 					</div>
 				))}
 				{isTyping && (
@@ -229,4 +276,4 @@ const MiawChat = ({ svcDeployment }) => {
 	);
 };
 
-export default MiawChat;
+export default MiawChatV3;
