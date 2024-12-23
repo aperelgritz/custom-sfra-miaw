@@ -7,7 +7,7 @@
 	flex-direction: column;
 	justify-content: space-between;
 	width: 100%;
-	max-width: 66%;
+	max-width: 70%;
 	min-height: 300px;
 	margin: 20px auto;
 	border-radius: 10px;
@@ -50,13 +50,6 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.chat-bubble.assistant .avatar {
-	width: 35px;
-	height: 35px;
-	border-radius: 50%;
-	margin-right: 10px;
-}
-
 .chat-bubble.user {
 	justify-content: flex-end;
 	width: 100%;
@@ -74,12 +67,22 @@
 /* Product carousel */
 /********************/
 
+.carousel-wrapper {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-around;
+	gap: 5px;
+	width: 100%;
+	overflow: hidden;
+}
+
 .product-carousel {
 	display: flex;
 	overflow-x: auto;
 	scroll-snap-type: x mandatory;
-	gap: 16px;
-	padding: 16px;
+	/* padding: 16px; */
 	max-width: 100%;
 	background-color: #f9f9f9; /* Optional for visibility */
 }
@@ -89,12 +92,15 @@
 	scroll-snap-align: center;
 	border: 1px solid #ddd;
 	border-radius: 8px;
-	padding: 16px;
+	padding: 10px;
 	background-color: #fff;
 	text-align: center;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	margin: 8px;
-	max-width: 250px;
+	/* max-width: 200px; */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .carousel-item img {
@@ -122,10 +128,45 @@
 }
 
 .product-image {
-	width: 100%;
-	height: auto;
-	border-radius: 4px;
-	margin-bottom: 8px;
+	max-width: 100%; /* Ensures the image fits within the parent container */
+	height: auto; /* Maintains aspect ratio */
+	border-radius: 8px; /* Matches the overall style */
+	margin-bottom: 8px; /* Adds spacing below the image */
+	display: block; /* Ensures proper layout within the carousel */
+}
+
+.text-around-json {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+.carousel-button {
+	/* position: absolute; */
+	top: 50%;
+	transform: translateY(-50%);
+	width: 40px;
+	height: 40px;
+	background-color: rgba(0, 0, 0, 0.5);
+	border: none;
+	color: #fff;
+	font-size: 1.5rem;
+	padding: 8px;
+	cursor: pointer;
+	z-index: 10;
+	border-radius: 50%;
+	display: flex;
+}
+
+.carousel-button.left {
+	left: 10px;
+}
+
+.carousel-button.right {
+	right: 10px;
+}
+
+.carousel-button:hover {
+	background-color: rgba(0, 0, 0, 0.8);
 }
 
 /************************/

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { FaPaperPlane, FaSignOutAlt } from 'react-icons/fa';
+import { FaPaperPlane, FaSignOutAlt, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import './MiawChatV3.css';
 
 const MiawChatV3 = ({ svcDeployment }) => {
@@ -12,6 +12,7 @@ const MiawChatV3 = ({ svcDeployment }) => {
 	const [sseReader, setSSEReader] = useState(null);
 	const [sessionEnded, setSessionEnded] = useState(false);
 	const [isTyping, setIsTyping] = useState(false);
+	const carouselRef = useRef(null);
 
 	const apiBaseUrl = 'https://rcg-ido-spring24.my.salesforce-scrt.com/iamessage/api/v2';
 	const sseEndpoint = 'https://sse-cors-proxy-f4797ef2b8f2.herokuapp.com/sse';
@@ -121,36 +122,50 @@ const MiawChatV3 = ({ svcDeployment }) => {
 								const jsonEnd = textValue.lastIndexOf('}') + 1;
 								if (jsonStart !== -1 && jsonEnd > jsonStart) {
 									const jsonText = textValue.slice(jsonStart, jsonEnd);
-									const textBefore = textValue.slice(0, jsonStart).trim();
-									const textAfter = textValue.slice(jsonEnd).trim();
+									const textBefore = textValue.slice(0, jsonStart).trim().replace(/\n/g, '<br>');
+									const textAfter = textValue.slice(jsonEnd).trim().replace(/\n/g, '<br>');
 
 									const normalizedJson = jsonText.replace(/\\n/g, '').replace(/\\"/g, '"');
 									const jsonData = JSON.parse(normalizedJson);
 
 									const productCarousel = (
-										<div className='product-carousel'>
-											{jsonData.products.map((product, idx) => (
-												<div key={idx} className='carousel-item'>
-													<img src={product.product_image} alt={product.product_name} className='product-image' />
-													<a href={product.product_url} target='_blank' rel='noopener noreferrer'>
-														{product.product_name}
-													</a>
-													<p>{product.product_price}</p>
-													<p>{product.reason}</p>
-												</div>
-											))}
+										<div className='carousel-wrapper'>
+											{jsonData.products.length > 2 && (
+												<button className='carousel-button left' onClick={() => scrollCarousel(-300)}>
+													<FaAngleLeft />
+												</button>
+											)}
+											<div className='product-carousel' ref={carouselRef}>
+												{jsonData.products.map((product, idx) => (
+													<div key={idx} className='carousel-item'>
+														<img src={product.product_image} alt={product.product_name} className='product-image' />
+														<a href={product.product_url} target='_blank' rel='noopener noreferrer'>
+															{product.product_name}
+														</a>
+														<p>{product.product_price}</p>
+														<p>{product.reason}</p>
+													</div>
+												))}
+											</div>
+											{jsonData.products.length > 2 && (
+												<button className='carousel-button right' onClick={() => scrollCarousel(300)}>
+													<FaAngleRight />
+												</button>
+											)}
 										</div>
 									);
 
 									parsedText = (
 										<div>
-											{textBefore && <p>{textBefore}</p>}
+											{textBefore && (
+												<p className='text-around-json' dangerouslySetInnerHTML={{ __html: textBefore }} />
+											)}
 											{productCarousel}
-											{textAfter && <p>{textAfter}</p>}
+											{textAfter && <p className='text-around-json' dangerouslySetInnerHTML={{ __html: textAfter }} />}
 										</div>
 									);
 								} else {
-									parsedText = <span>{textValue}</span>;
+									parsedText = <span dangerouslySetInnerHTML={{ __html: textValue.replace(/\n/g, '<br/>') }}></span>;
 								}
 
 								setMessages((prev) => [
@@ -173,6 +188,12 @@ const MiawChatV3 = ({ svcDeployment }) => {
 			}
 		} catch (err) {
 			setError(err.message);
+		}
+	};
+
+	const scrollCarousel = (scrollOffset) => {
+		if (carouselRef.current) {
+			carouselRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
 		}
 	};
 
