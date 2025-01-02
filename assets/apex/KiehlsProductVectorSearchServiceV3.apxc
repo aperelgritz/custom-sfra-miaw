@@ -1,0 +1,145 @@
+public with sharing class KiehlsProductVectorSearchServiceV3 {
+    
+    // Inner class to represent the search result
+    public class ProductResult {   
+        @InvocableVariable(label='Product ID' description='The unique identifier of the product.')
+        public String productId;
+        
+        @InvocableVariable(label='Product Price' description='The price of the product.')
+        public String productPrice;
+        
+        @InvocableVariable(label='Product URL' description='The URL of the product.')
+        public String productURL;
+        
+        @InvocableVariable(label='Chunk' description='Additional product information.')
+        public String chunk;
+
+        @InvocableVariable(label='Product Image URL' description='The image URL of the product.')
+        public String productImageURL;
+        
+        // Constructor
+        public ProductResult(String productId, String productPrice, String productURL, String chunk, String productImageURL) {
+            this.productId = productId;
+            this.productPrice = productPrice;
+            this.productURL = productURL;
+            this.chunk = chunk;
+            this.productImageURL = productImageURL;
+        }
+    }
+      
+    // Input class for Invocable Method
+    public class SearchRequest {
+        @InvocableVariable(label='Search Term' description='The term to search for in products.' required=true)
+        public String searchTerm;
+    }
+
+    // Output class for Invocable Method
+    public class SearchResponse {
+        @InvocableVariable(label='Search Term' description='The search term used.')
+        public String input;
+
+        @InvocableVariable(label='Search Results' description='List of products matching the search term.')
+        public List<ProductResult> results;
+    }
+
+    /**
+     * Invocable method to search products in Kiehls Product Vector Search Service.
+     *
+     * This method can be called from Salesforce Flow, Process Builder, or other declarative tools.
+     *
+     * @param requests A list of SearchRequest objects containing search terms.
+     * @return A list of SearchResponse objects containing search results.
+     */
+    @InvocableMethod(label='Search Kiehls Products V3' description='Searches for Kiehls products based on a search term.')
+    public static List<SearchResponse> searchKiehlsProducts(List<SearchRequest> requests) {
+        List<SearchResponse> responses = new List<SearchResponse>();
+
+        // Iterate through each search request
+        for(SearchRequest req : requests) {
+            // Call the internal searchProducts method
+            List<ProductResult> productResults = searchProducts(req.searchTerm);
+
+            // Create a new SearchResponse object
+            SearchResponse resp = new SearchResponse();
+            resp.results = productResults;
+            resp.input = req.searchTerm;
+
+            // Add the response to the list
+            responses.add(resp);
+        }
+
+        return responses;
+    }    
+        
+    /**
+     * Executes the ANSI SQL query against Salesforce Data Cloud and returns the search results.
+     *
+     * @param input The input string to be used in the vector_search function.
+     * @return A list of ProductResult objects containing the search results.
+     */
+    public static List<ProductResult> searchProducts(String input) {
+        // Sanitize the input to prevent SQL injection
+        String sanitizedInput = String.escapeSingleQuotes(input);
+
+        // Construct the ANSI SQL query with the sanitized input
+        String ansiSql = 
+            'SELECT score__c AS Score, PID__c AS "Product ID", Price__c AS "Product Price", URL__c AS "Product URL", Chunk__c AS "Chunk", Image_URL__c as "Image URL"' +
+            'FROM vector_search(TABLE(Master_Product_Kiehls_v2_index__dlm), \'' + sanitizedInput + '\', \'' + '\', 5) v ' +
+            'JOIN Master_Product_Kiehls_v2_chunk__dlm c ON v.RecordId__c = c.RecordId__c ' +
+            'JOIN output15_merged_and_separate_csv__dll d ON c.SourceRecordId__c = d.PID__c ' +
+            'ORDER BY v.score__c DESC';
+
+        // Initialize the list to hold the structured search results
+        List<ProductResult> searchResults = new List<ProductResult>();
+
+        try {
+            // Create a CdpQueryInput object with the ANSI SQL
+            ConnectApi.CdpQueryInput cdpInput = new ConnectApi.CdpQueryInput();
+            cdpInput.sql = ansiSql;
+
+            // Execute the ANSI SQL query using ConnectApi.CdpQuery.queryAnsiSqlV2
+            ConnectApi.CdpQueryOutputV2 cdpOutput = ConnectApi.CdpQuery.queryAnsiSqlV2(cdpInput);
+
+            // Check if the query returned any results
+            if (cdpOutput != null && cdpOutput.data != null && !cdpOutput.data.isEmpty()) {
+                // Assign the data to a List<Object>
+                List<Object> data = cdpOutput.data;
+
+                // Iterate through each record in the data
+                for (Object recordObj : data) {
+                    try {
+                        // Cast recordObj to ConnectApi.CdpQueryV2Row
+                        ConnectApi.CdpQueryV2Row record = (ConnectApi.CdpQueryV2Row)recordObj;
+
+                        // Access the rowData property, which is a List<Object>
+                        List<Object> rowData = record.rowData;
+
+                        // Ensure the rowData has the expected number of fields
+                        if (rowData.size() >= 6) {
+                            // Extract field values based on their position
+                            Decimal score = (Decimal)rowData[0];
+                            String productId = (String)rowData[1];
+                            String productPrice = (String)rowData[2];
+                            String productURL = (String)rowData[3];
+                            String chunk = (String)rowData[4];
+                            String productImageURL = (String)rowData[5];
+
+                            // Create a new ProductResult instance and add it to the list
+                            searchResults.add(new ProductResult(productId, productPrice, productURL, chunk, productImageURL));
+                        }
+                    } catch (Exception e) {
+                        // Handle any casting errors or unexpected structures
+                    }
+                }
+            }
+
+        } catch (ConnectApi.ConnectApiException apiEx) {
+            // Handle exceptions related to the ConnectApi.CdpQuery methods
+        } catch (Exception e) {
+            // Handle any other unexpected exceptions
+        }
+
+        // Return the list of search results
+        return searchResults;
+    }
+}

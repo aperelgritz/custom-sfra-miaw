@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { FaPaperPlane, FaSignOutAlt, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import './MiawChatV3.css';
 
-const MiawChatV3 = ({ svcDeployment }) => {
+// const MiawChatV3 = ({ svcDeployment }) => {
+const MiawChatV3 = () => {
 	const [accessToken, setAccessToken] = useState(null);
 	const [error, setError] = useState(null);
 	const [conversationId, setConversationId] = useState(null);
@@ -14,8 +15,10 @@ const MiawChatV3 = ({ svcDeployment }) => {
 	const [isTyping, setIsTyping] = useState(false);
 	const carouselRef = useRef(null);
 
-	const apiBaseUrl = 'https://rcg-ido-spring24.my.salesforce-scrt.com/iamessage/api/v2';
-	const sseEndpoint = 'https://sse-cors-proxy-f4797ef2b8f2.herokuapp.com/sse';
+	const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+	const sseEndpoint = process.env.REACT_APP_SSE_URL;
+	const orgId = process.env.REACT_APP_ORG_ID;
+	const esDeveloperName = process.env.REACT_APP_SVC_DEPLOYMENT;
 
 	useEffect(() => {
 		const initializeChat = async () => {
@@ -44,8 +47,8 @@ const MiawChatV3 = ({ svcDeployment }) => {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					orgId: '00D0900000DYKY0',
-					esDeveloperName: svcDeployment,
+					orgId,
+					esDeveloperName,
 					capabilitiesVersion: '1',
 					platform: 'Web',
 					context: {
@@ -73,7 +76,7 @@ const MiawChatV3 = ({ svcDeployment }) => {
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${accessToken}`,
 				},
-				body: JSON.stringify({ conversationId: convId, esDeveloperName: svcDeployment }),
+				body: JSON.stringify({ conversationId: convId, esDeveloperName }),
 			});
 			if (response.status !== 201) throw new Error('Failed to create conversation');
 			setConversationId(convId);
@@ -91,7 +94,7 @@ const MiawChatV3 = ({ svcDeployment }) => {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 					Accept: 'ext/event-stream',
-					'X-Org-Id': '00D0900000DYKY0',
+					'X-Org-Id': orgId,
 				},
 			});
 			const reader = response.body.getReader();
@@ -131,7 +134,7 @@ const MiawChatV3 = ({ svcDeployment }) => {
 									const productCarousel = (
 										<div className='carousel-wrapper'>
 											{jsonData.products.length > 2 && (
-												<button className='carousel-button left' onClick={() => scrollCarousel(-300)}>
+												<button className='carousel-button left' onClick={() => scrollCarousel(-350)}>
 													<FaAngleLeft />
 												</button>
 											)}
@@ -148,7 +151,7 @@ const MiawChatV3 = ({ svcDeployment }) => {
 												))}
 											</div>
 											{jsonData.products.length > 2 && (
-												<button className='carousel-button right' onClick={() => scrollCarousel(300)}>
+												<button className='carousel-button right' onClick={() => scrollCarousel(350)}>
 													<FaAngleRight />
 												</button>
 											)}
@@ -200,11 +203,11 @@ const MiawChatV3 = ({ svcDeployment }) => {
 	const endSession = async () => {
 		if (!conversationId) return;
 		try {
-			await fetch(`${apiBaseUrl}/conversation/${conversationId}/session?esDeveloperName=${svcDeployment}`, {
+			await fetch(`${apiBaseUrl}/conversation/${conversationId}/session?esDeveloperName=${esDeveloperName}`, {
 				method: 'DELETE',
 				headers: { Authorization: `Bearer ${accessToken}` },
 			});
-			await fetch(`${apiBaseUrl}/conversation/${conversationId}?esDeveloperName=${svcDeployment}`, {
+			await fetch(`${apiBaseUrl}/conversation/${conversationId}?esDeveloperName=${esDeveloperName}`, {
 				method: 'DELETE',
 				headers: { Authorization: `Bearer ${accessToken}` },
 			});
@@ -233,7 +236,7 @@ const MiawChatV3 = ({ svcDeployment }) => {
 						messageType: 'StaticContentMessage',
 						staticContent: { formatType: 'Text', text: inputText },
 					},
-					esDeveloperName: svcDeployment,
+					esDeveloperName: esDeveloperName,
 				}),
 			});
 			setInputText('');
