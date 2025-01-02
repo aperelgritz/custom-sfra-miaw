@@ -15,7 +15,7 @@ This package is intended to demonstrate and illustrate the Salesforce Agentforce
 
 ## Technical Overview
 
-1. Data ingestion:
+### 1. Data ingestion:
 
 - Product catalog is in `./assets/data/kiehls-product-catalog.csv`.
 - The _Product Info_ field is designed to be the target for embedding generation. It concatenates fields _Name_, _Subtitle_, _Description_, _Good For_.
@@ -23,35 +23,35 @@ This package is intended to demonstrate and illustrate the Salesforce Agentforce
 - CSV data is mapped to a new DMO adapted from the Master Product DMO, enriched with new fields for the product information.
 - A Search Index is configured on the _Product Info_ field.
 
-2. Agent Topic:
+### 2. Agent Topic:
 
 - The configuration is provided in `./assets/agent/agent-topic.txt`.
 - A single topic handles how the agent should behave, in particular by asking questions to determine the shopper's needs.
 - One instruction tells the LLM to return product information as a JSON object, so it can be parsed and rendered as a carousel on the storefront.
 
-3. Agent Action:
+### 3. Agent Action:
 
 - The APEX called by the action is in `./assets/apex/KiehlsProductVectorSearchServiceV3.apxc`.
 - The APEX is designed to perform a `vector_search` against the indexed data, and to return additional fields.
 
-4. MIAW Configuration:
+### 4. MIAW Configuration:
 
 - The Embedded Service Deployment is a MIAW Custom Client.
 
-5. Implementation on B2C Commerce Storefront
+### 5. Implementation on B2C Commerce Storefront
 
 - The implementation is contained in cartridge `./cartridges/custom_sfra_miaw`.
 - The MIAW API calls and rendering are managed by a single React component in `./cartridges/custom_sfra_miaw/cartridge/client/default/react_v3/MiawChatV3.jsx`.
 - The Server-Sent Events endpoint in the MIAW REST API must go through a proxy - see repo https://github.com/aperelgritz/sse-cors-proxy
 - The product finder is implemented in a controller `Miaw-StartV3` that renders a template `chat_v3.isml`.
 
-6. Use the Product Finder!
+### 6. Use the Product Finder!
 
 - Call the controller `Miaw-StartV3`.
 
 ## Deployment
 
-### Data Cloud
+### 1. Data Cloud
 
 - Go to _Data Model_ tab > _New_ > _From Existing_
 - Select _Master Product_ > _Next_
@@ -81,7 +81,7 @@ JOIN output15_merged_and_separate_csv__dll d ON c.SourceRecordId__c = d.PID__c
 ORDER BY v.score__c DESC
 ```
 
-### Apex
+### 2. Apex
 
 - Open _Developer Console_
 - _File_ > _New_ > _Apex Class_
@@ -130,7 +130,7 @@ for(KiehlsProductVectorSearchServiceV3.SearchResponse response : searchResponses
 - Click _Execute_
 - Check the logs and make sure you see the product output.
 
-### Agent Configuration
+### 3. Agent Configuration
 
 - _Setup_ > _Agents_ > _New Agent_
 - Enter your own _Label Name_, _API Name_, _Description_
@@ -141,7 +141,7 @@ for(KiehlsProductVectorSearchServiceV3.SearchResponse response : searchResponses
 - _New Topic_ > Copy the configuration in `./assets/agent/agent-topic.txt`
 - Add _Topic Action_ > _Apex_ > Select the class created above (eg. _Search Kiehls Products V3_)
 
-### MIAW Configuration
+### 4. MIAW Configuration
 
 - _Setup_ > _Routing Configurations_ > _New_
   - Name: MIAW
@@ -197,7 +197,7 @@ for(KiehlsProductVectorSearchServiceV3.SearchResponse response : searchResponses
   - Save
   - Publish
 
-### B2C Commerce Cartridge
+### 5. B2C Commerce Cartridge
 
 - `git clone git@github.com:aperelgritz/custom-sfra-miaw.git`
 - `cd custom-sfra-miaw`
@@ -216,6 +216,6 @@ REACT_APP_SVC_DEPLOYMENT=<your-embedded-service-deployment-api-name>
 - Upload the cartridge to your B2C Commerce sandbox.
 - Add the cartridge to your cartridge path (tested with SFRA version 7.0.1).
 
-### Use the Product Finder
+### 6. Use the Product Finder
 
 - Call the controller `Miaw-StartV3`.
