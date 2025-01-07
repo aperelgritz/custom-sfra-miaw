@@ -141,9 +141,9 @@ const MiawChatV3 = () => {
 											<div className='product-carousel' ref={carouselRef}>
 												{jsonData.products.map((product, idx) => (
 													<div key={idx} className='carousel-item'>
-														<img src={product.product_image} alt={product.product_name} className='product-image' />
 														<a href={product.product_url} target='_blank' rel='noopener noreferrer'>
-															{product.product_name}
+															<img src={product.product_image} alt={product.product_name} className='product-image' />
+															<div>{product.product_name}</div>
 														</a>
 														<p>{product.product_price}</p>
 														<p>{product.reason}</p>
