@@ -88,7 +88,7 @@ const MiawChatV4 = () => {
 			const response = await fetch(sseEndpoint, {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
-					Accept: 'ext/event-stream',
+					Accept: 'text/event-stream',
 					'X-Org-Id': orgId,
 				},
 			});
@@ -134,10 +134,7 @@ const MiawChatV4 = () => {
 									const jsonEnd = textValue?.lastIndexOf('}') + 1;
 									if (jsonStart !== -1 && jsonEnd > jsonStart) {
 										const jsonText = textValue.slice(jsonStart, jsonEnd);
-										const textBefore = textValue.slice(0, jsonStart).trim().replace(/\n/g, '<br>');
-										const textAfter = textValue.slice(jsonEnd).trim().replace(/\n/g, '<br>');
-
-										const normalizedJson = jsonText.replace(/\\n/g, '').replace(/\\"/g, '"');
+										const normalizedJson = jsonText.replace(/\\n/g, '').replace(/\\"/g, '');
 										const jsonData = JSON.parse(normalizedJson);
 										const { standaloneText, setsOfProducts, overallClosingText } = jsonData;
 
@@ -166,7 +163,7 @@ const MiawChatV4 = () => {
 																				<div>{product.product_name}</div>
 																			</a>
 																			<p>{product.product_price}</p>
-																			<p>{product.matchReason.replace(/"/g, '&quot;')}</p>
+																			<p>{product.matchReason.replace(/"/g, '')}</p>
 																		</div>
 																	))}
 																</div>
@@ -183,35 +180,9 @@ const MiawChatV4 = () => {
 											</div>
 										);
 
-										parsedText = (
-											<div>
-												{textBefore && (
-													<p
-														className='text-around-json'
-														dangerouslySetInnerHTML={{
-															__html: textBefore,
-														}}
-													/>
-												)}
-												{parsedContent}
-												{textAfter && (
-													<p
-														className='text-around-json'
-														dangerouslySetInnerHTML={{
-															__html: textAfter,
-														}}
-													/>
-												)}
-											</div>
-										);
+										parsedText = <div>{parsedContent}</div>;
 									} else {
-										parsedText = (
-											<span
-												dangerouslySetInnerHTML={{
-													__html: textValue?.replace(/\n/g, '<br/>'),
-												}}
-											></span>
-										);
+										parsedText = <span dangerouslySetInnerHTML={{ __html: textValue?.replace(/\n/g, '<br/>') }}></span>;
 									}
 
 									setMessages((prev) => [

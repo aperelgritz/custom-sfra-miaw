@@ -76,6 +76,7 @@
 	gap: 5px;
 	width: 100%;
 	overflow: hidden;
+	margin-bottom: 1rem;
 }
 
 .product-carousel {
@@ -131,11 +132,6 @@
 	border-radius: 8px;
 	margin-bottom: 8px;
 	display: block;
-}
-
-.text-container {
-	margin-top: 1rem;
-	margin-bottom: 1rem;
 }
 
 .carousel-button {
