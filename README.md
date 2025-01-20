@@ -187,6 +187,9 @@ for(KiehlsProductVectorSearchServiceV3.SearchResponse response : searchResponses
   - Save
   - Messaging Settings > click "MIAW for Kiehls Apex v3"
     - Activate
+- Setup > CORS
+  - New
+  - Origin URL pattern: https://\*.dx.commercecloud.salesforce.com
 - _Setup_ > _Embedded Service Deployments_
   - New Deployment
   - Messaging for In-App & Web
