@@ -10,7 +10,7 @@
 
 # production
 /build
-/static/default/js
+/cartridges/custom_sfra_miaw/cartridge/static
 
 # misc
 .DS_Store

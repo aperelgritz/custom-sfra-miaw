@@ -58,7 +58,8 @@ This package is intended to demonstrate and illustrate the Salesforce Agentforce
 - Update _Object Label_ to your own name (eg. _Master Product Kiehls_)
 - Update _Object API Name_ to your own API name (eg. _Master_Product_Kiehls_)
 - Add fields:
-  - Product Description / Description\_\_c / Text
+  - Categories First Level / CategoriesFirstLevel\_\_c / Text
+  - Categories Second Level / CategoriesSecondLevel\_\_c / Text
   - Product Good For / ProductGoodFor\_\_c / Text
   - Product How to Use / ProductHowtoUse\_\_c / Text
   - Product Image URL / ProductImageURL\_\_c / Text
@@ -210,7 +211,7 @@ for(KiehlsProductVectorSearchServiceV3.SearchResponse response : searchResponses
 
 ```
 REACT_APP_API_BASE_URL=https://<your-org-name>.my.salesforce-scrt.com/iamessage/api/v2
-REACT_APP_SSE_URL=<your-heroku-sse-proxy>
+REACT_APP_SSE_URL=https://<your-org-name>.my.salesforce-scrt.com/eventrouter/v1/sse
 REACT_APP_ORG_ID=<your-org-id>
 REACT_APP_SVC_DEPLOYMENT=<your-embedded-service-deployment-api-name>
 ```
