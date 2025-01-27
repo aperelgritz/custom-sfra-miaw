@@ -17,4 +17,9 @@ server.get('StartV4', function (req, res, next) {
 	next();
 });
 
+server.get('StartV5', function (req, res, next) {
+	res.render('miaw/chat_v5');
+	next();
+});
+
 module.exports = server.exports();

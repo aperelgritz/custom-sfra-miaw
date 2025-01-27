@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { FaPaperPlane, FaSignOutAlt, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
-import './MiawChatV4.css';
 
-const MiawChatV4 = () => {
+import ProductGrid from './ProductGrid';
+
+import { FaPaperPlane, FaSignOutAlt, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
+import './MiawChatV5.css';
+
+const MiawChatV5 = () => {
 	const [accessToken, setAccessToken] = useState(null);
 	const [error, setError] = useState(null);
 	const [conversationId, setConversationId] = useState(null);
@@ -12,6 +15,7 @@ const MiawChatV4 = () => {
 	const [sseReader, setSSEReader] = useState(null);
 	const [sessionEnded, setSessionEnded] = useState(false);
 	const [isTyping, setIsTyping] = useState(false);
+	const [pids, setPids] = useState([]);
 	const carouselRef = useRef(null);
 
 	const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
@@ -38,9 +42,7 @@ const MiawChatV4 = () => {
 		try {
 			const response = await fetch(`${apiBaseUrl}/authorization/unauthenticated/access-token`, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					orgId,
 					esDeveloperName,
@@ -110,6 +112,113 @@ const MiawChatV4 = () => {
 						try {
 							const rawPayload = line.replace('data:', '').trim();
 
+							let eventData;
+							try {
+								eventData = JSON.parse(rawPayload);
+							} catch (parseError) {
+								console.warn('Malformed JSON in SSE stream:', rawPayload);
+								return;
+							}
+
+							const entryType = eventData.conversationEntry?.entryType;
+							if (entryType === 'Message') {
+								const role = eventData.conversationEntry.sender?.role === 'EndUser' ? 'EndUser' : 'ChatBot';
+								const escapedPayload = eventData.conversationEntry.entryPayload;
+
+								try {
+									const unescapedPayload = JSON.parse(escapedPayload);
+									const textValue = unescapedPayload?.abstractMessage?.staticContent?.text;
+
+									let parsedText;
+									const jsonMatch = textValue?.match(/\{.*\}/s);
+									if (jsonMatch) {
+										try {
+											let jsonText = jsonMatch[0];
+											jsonText = jsonText.replace(/(?<!\\)"(.*?)"/g, (match, p1) => `"${p1.replace(/"/g, '\\"')}"`);
+											const jsonData = JSON.parse(jsonText);
+											const { conversationAnswer, productIds } = jsonData;
+
+											console.log(`productIds: ${productIds}`);
+											if (productIds?.length > 0) setPids(productIds);
+
+											const parsedContent = (
+												<div>
+													{conversationAnswer && (
+														<span
+															className='text-container'
+															dangerouslySetInnerHTML={{ __html: conversationAnswer.replace(/\n/g, '<br/>') }}
+														></span>
+													)}
+												</div>
+											);
+
+											parsedText = <div>{parsedContent}</div>;
+										} catch (jsonParseError) {
+											console.error('Error parsing JSON from textValue:', jsonParseError);
+											parsedText = <span>{textValue}</span>;
+										}
+									} else {
+										parsedText = <span dangerouslySetInnerHTML={{ __html: textValue?.replace(/\n/g, '<br/>') }}></span>;
+									}
+
+									setMessages((prev) => [
+										...prev,
+										{
+											id: uuidv4(),
+											role,
+											text: parsedText,
+										},
+									]);
+									setIsTyping(false);
+								} catch (payloadError) {
+									console.error('Error parsing conversation entry payload:', escapedPayload, payloadError);
+								}
+							} else if (entryType === 'TypingStartedIndicator') {
+								setIsTyping(true);
+							} else if (entryType === 'TypingStoppedIndicator') {
+								setIsTyping(false);
+							}
+						} catch (err) {
+							console.error('Error parsing SSE JSON:', line, err);
+						}
+					}
+				});
+			}
+		} catch (err) {
+			setError(err.message);
+		}
+	};
+
+	/*
+	const startSSE = async () => {
+		if (!accessToken) return;
+		try {
+			await createConversation();
+			const response = await fetch(sseEndpoint, {
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					Accept: 'text/event-stream',
+					'X-Org-Id': orgId,
+				},
+			});
+			const reader = response.body.getReader();
+			setSSEReader(reader);
+			const decoder = new TextDecoder();
+			let partialData = '';
+
+			while (true) {
+				const { value, done } = await reader.read();
+				if (done) break;
+
+				partialData += decoder.decode(value, { stream: true });
+				const lines = partialData.split('\n');
+				partialData = lines.pop(); // Preserve incomplete data for next iteration
+
+				lines.forEach((line) => {
+					if (line.startsWith('data:')) {
+						try {
+							const rawPayload = line.replace('data:', '').trim();
+
 							// Validate and parse JSON
 							let eventData;
 							try {
@@ -134,49 +243,22 @@ const MiawChatV4 = () => {
 									const jsonEnd = textValue?.lastIndexOf('}') + 1;
 									if (jsonStart !== -1 && jsonEnd > jsonStart) {
 										const jsonText = textValue.slice(jsonStart, jsonEnd);
-										const normalizedJson = jsonText.replace(/\\n/g, '').replace(/\\"/g, '');
+										// const normalizedJson = jsonText.replace(/\\n/g, '').replace(/\\"/g, '');
+										const normalizedJson = jsonText.replace(/\\"/g, '');
 										const jsonData = JSON.parse(normalizedJson);
-										const { standaloneText, setsOfProducts, overallClosingText } = jsonData;
+										const { conversationAnswer, productIds } = jsonData;
+
+										console.log(`productIds: ${productIds}`);
+										if (productIds?.length > 0) setPids(productIds);
 
 										const parsedContent = (
 											<div>
-												{standaloneText && <p className='text-container'>{standaloneText}</p>}
-												{setsOfProducts &&
-													setsOfProducts.map((set, idx) => (
-														<div key={idx}>
-															{set.introText && <p className='text-container'>{set.introText}</p>}
-															<div className='carousel-products'>
-																{set.products.length > 2 && (
-																	<button className='carousel-button left' onClick={() => scrollCarousel(-350)}>
-																		<FaAngleLeft />
-																	</button>
-																)}
-																<div className='product-carousel' ref={carouselRef}>
-																	{set.products.map((product, idx) => (
-																		<div key={idx} className='carousel-item'>
-																			<a href={product.product_url} target='_blank' rel='noopener noreferrer'>
-																				<img
-																					src={product.product_image}
-																					alt={product.product_name}
-																					className='product-image'
-																				/>
-																				<div>{product.product_name}</div>
-																			</a>
-																			<p>{product.product_price}</p>
-																			{product.matchReason && <p>{product.matchReason.replace(/"/g, '')}</p>}
-																		</div>
-																	))}
-																</div>
-																{set.products.length > 2 && (
-																	<button className='carousel-button right' onClick={() => scrollCarousel(350)}>
-																		<FaAngleRight />
-																	</button>
-																)}
-															</div>
-															{set.closingText && <p className='text-container'>{set.closingText}</p>}
-														</div>
-													))}
-												{overallClosingText && <p className='text-container'>{overallClosingText}</p>}
+												{conversationAnswer && (
+													<span
+														className='text-container'
+														dangerouslySetInnerHTML={{ __html: conversationAnswer.replace(/\n/g, '<br/>') }}
+													></span>
+												)}
 											</div>
 										);
 
@@ -212,12 +294,7 @@ const MiawChatV4 = () => {
 			setError(err.message);
 		}
 	};
-
-	const scrollCarousel = (scrollOffset) => {
-		if (carouselRef.current) {
-			carouselRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
-		}
-	};
+	*/
 
 	const endSession = async () => {
 		if (!conversationId) return;
@@ -268,54 +345,61 @@ const MiawChatV4 = () => {
 	};
 
 	return (
-		<div className='chat-container'>
-			<h1 className='chat-title'>Tell us what you're looking for!</h1>
-			<div className='chat-window'>
-				{messages.map((msg) => (
-					<div key={msg.id} className={`chat-bubble ${msg.role === 'EndUser' ? 'user' : 'assistant'}`}>
-						<div className='bubble-text'>{msg.text}</div>
+		<div className='product-finder'>
+			<div className='product-finder__left-panel'>
+				<div className='chat-container'>
+					{/* <h1 className='chat-title'>Tell us what you're looking for!</h1> */}
+					<div className='chat-window'>
+						{messages.map((msg) => (
+							<div key={msg.id} className={`chat-bubble ${msg.role === 'EndUser' ? 'user' : 'assistant'}`}>
+								<div className='bubble-text'>{msg.text}</div>
+							</div>
+						))}
+						{isTyping && (
+							<div className='typing-section'>
+								<span className='typing-message'>Agent is typing...</span>
+								<div className='wave'>
+									<span className='dot'></span>
+									<span className='dot'></span>
+									<span className='dot'></span>
+								</div>
+							</div>
+						)}
+						{sessionEnded && (
+							<div className='session-ended-message'>
+								<p>The agent session has ended.</p>
+							</div>
+						)}
 					</div>
-				))}
-				{isTyping && (
-					<div className='typing-section'>
-						<span className='typing-message'>Agent is typing...</span>
-						<div className='wave'>
-							<span className='dot'></span>
-							<span className='dot'></span>
-							<span className='dot'></span>
+					<div className='chat-input-area'>
+						<div className='chat-input-container'>
+							<div className='chat-input'>
+								<input
+									type='text'
+									value={inputText}
+									onChange={(e) => setInputText(e.target.value)}
+									onKeyPress={handleKeyPress}
+									placeholder='Start typing...'
+									disabled={sessionEnded}
+								/>
+								<button onClick={sendMessage} className='send-button' disabled={sessionEnded}>
+									<FaPaperPlane />
+									<span className='tooltip'>Send message</span>
+								</button>
+								<button onClick={endSession} className='end-button' disabled={sessionEnded}>
+									<FaSignOutAlt />
+									<span className='tooltip'>End session</span>
+								</button>
+							</div>
 						</div>
 					</div>
-				)}
-				{sessionEnded && (
-					<div className='session-ended-message'>
-						<p>The agent session has ended.</p>
-					</div>
-				)}
-			</div>
-			<div className='chat-input-area'>
-				<div className='chat-input-container'>
-					<div className='chat-input'>
-						<input
-							type='text'
-							value={inputText}
-							onChange={(e) => setInputText(e.target.value)}
-							onKeyPress={handleKeyPress}
-							placeholder='Start typing...'
-							disabled={sessionEnded}
-						/>
-						<button onClick={sendMessage} className='send-button' disabled={sessionEnded}>
-							<FaPaperPlane />
-							<span className='tooltip'>Send message</span>
-						</button>
-						<button onClick={endSession} className='end-button' disabled={sessionEnded}>
-							<FaSignOutAlt />
-							<span className='tooltip'>End session</span>
-						</button>
-					</div>
 				</div>
+			</div>
+			<div className='product-finder__right-panel'>
+				<ProductGrid pids={pids} />
 			</div>
 		</div>
 	);
 };
 
-export default MiawChatV4;
+export default MiawChatV5;

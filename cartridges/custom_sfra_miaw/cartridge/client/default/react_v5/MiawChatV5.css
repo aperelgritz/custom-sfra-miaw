@@ -1,3 +1,31 @@
+/*************************/
+/* Product finder layout */
+/*************************/
+
+.product-finder {
+	display: flex;
+	min-height: 100vh;
+	height: auto;
+	overflow: visible; /* Allow the main window to handle scrolling */
+}
+
+.product-finder__left-panel {
+	flex: 2;
+	overflow: hidden; /* Prevent scrolling in the left panel */
+	border-right: 1px solid #ddd;
+	padding: 20px;
+}
+
+.product-finder__right-panel {
+	flex: 3;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	height: auto; /* Allow it to grow with content */
+	overflow: visible; /* Prevent unnecessary scrolling */
+}
+
 /*********************************/
 /* Chat container, title, window */
 /*********************************/
@@ -7,9 +35,7 @@
 	flex-direction: column;
 	justify-content: space-between;
 	width: 100%;
-	max-width: 70%;
 	min-height: 300px;
-	margin: 20px auto;
 	border-radius: 10px;
 	font-family: Arial, sans-serif;
 	overflow: visible;
@@ -21,7 +47,6 @@
 
 .chat-window {
 	flex-grow: 1;
-	padding: 20px;
 	overflow: visible; /* Remove internal scrollbar */
 	max-height: none; /* Let content expand naturally */
 }
@@ -61,105 +86,6 @@
 	border-radius: 15px;
 	padding: 12px 15px;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/********************/
-/* Product carousel */
-/********************/
-
-.chat-window .carousel-products {
-	position: relative;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-around;
-	gap: 5px;
-	width: 100%;
-	overflow: hidden;
-	margin-bottom: 1rem;
-}
-
-.chat-window .product-carousel {
-	display: flex;
-	overflow-x: auto;
-	scroll-snap-type: x mandatory;
-	max-width: 100%;
-	background-color: #f9f9f9;
-}
-
-.chat-window .carousel-item {
-	flex: 0 0 calc(50% - 16px);
-	scroll-snap-align: center;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	padding: 10px;
-	background-color: #fff;
-	text-align: center;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	margin: 8px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.chat-window .carousel-item img {
-	width: 100%;
-	height: auto;
-	border-radius: 4px;
-	margin-bottom: 8px;
-}
-
-.chat-window .carousel-item a {
-	font-size: 1rem;
-	font-weight: bold;
-	color: #007bff;
-	text-decoration: none;
-	margin: 8px 0;
-}
-
-.chat-window .carousel-item a:hover {
-	text-decoration: underline;
-}
-
-.chat-window .carousel-item p {
-	margin: 4px 0;
-	color: #555;
-}
-
-.chat-window .product-image {
-	max-width: 100%;
-	height: auto;
-	border-radius: 8px;
-	margin-bottom: 8px;
-	display: block;
-}
-
-.chat-window .carousel-button {
-	top: 50%;
-	transform: translateY(-50%);
-	width: 40px;
-	height: 40px;
-	background-color: rgba(0, 0, 0, 0.5);
-	border: none;
-	color: #fff;
-	font-size: 1.5rem;
-	padding: 8px;
-	cursor: pointer;
-	z-index: 10;
-	border-radius: 50%;
-	display: flex;
-}
-
-.chat-window .carousel-button.left {
-	left: 10px;
-}
-
-.chat-window .carousel-button.right {
-	right: 10px;
-}
-
-.chat-window .carousel-button:hover {
-	background-color: rgba(0, 0, 0, 0.8);
 }
 
 /************************/
@@ -331,7 +257,7 @@
 
 @keyframes wave {
 	0%,
-	60%,
+	50%,
 	100% {
 		transform: initial;
 	}

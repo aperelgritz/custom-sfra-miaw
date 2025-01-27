@@ -1,0 +1,94 @@
+.product-finder-grid {
+	display: flex;
+	flex-wrap: wrap; /* Allow items to wrap like a grid */
+	gap: 10px;
+	align-items: flex-start; /* Align items at the top */
+	padding: 10px;
+	width: 100%;
+	overflow: visible; /* Ensure all content is visible */
+	max-height: fit-content; /* Ensure the container only grows as needed */
+}
+
+.product-finder-grid__product-tile {
+	flex: 1 1 250px; /* Grow and shrink with a minimum width of 200px */
+	max-width: 1fr; /* Ensure flexibility */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: #fff;
+	padding: 5px;
+	text-align: center;
+	height: auto; /* Prevent growth */
+	flex-grow: 0; /* Ensure it doesn’t expand */
+	max-height: 400px; /* Limit max height */
+}
+
+.product-finder-grid__product-image {
+	width: 100%;
+	max-width: 250px; /* Prevents images from getting too large */
+	height: auto;
+	border-radius: 4px;
+}
+
+.product-finder-grid__product-tile a {
+	font-size: 1rem;
+	font-weight: bold;
+	color: #007bff;
+	text-decoration: none;
+	margin: 8px 0;
+}
+
+.product-finder-grid__product-tile a:hover {
+	text-decoration: underline;
+}
+
+.product-finder-grid__product-tile p {
+	margin: 4px 0;
+	color: #555;
+}
+
+/*
+.product-finder-grid {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.product-finder-grid__product-tile {
+	max-width: 300px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 10px;
+	background-color: #fff;
+	text-align: center;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin: 8px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.product-finder-grid__product-image {
+	width: 100%;
+	height: auto;
+	border-radius: 4px;
+}
+
+.product-finder-grid__product-tile a {
+	font-size: 1rem;
+	font-weight: bold;
+	color: #007bff;
+	text-decoration: none;
+	margin: 8px 0;
+}
+
+.product-finder-grid__product-tile a:hover {
+	text-decoration: underline;
+}
+
+.product-finder-grid__product-tile p {
+	margin: 4px 0;
+	color: #555;
+}
+*/
