@@ -20,6 +20,8 @@
 .env.production.local
 .env
 .env.v4
+.env.v5
+.env.v6
 
 npm-debug.log*
 yarn-debug.log*

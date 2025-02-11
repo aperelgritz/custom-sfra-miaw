@@ -50,6 +50,11 @@ server.get('GetJson', function (req, res, next) {
 		products: results,
 	};
 
+	// Set CORS headers
+	res.setHttpHeader('Access-Control-Allow-Origin', 'https://aperelgritz.github.io');
+	res.setHttpHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+	res.setHttpHeader('Access-Control-Allow-Headers', 'Content-Type');
+
 	res.json(output);
 
 	return next();

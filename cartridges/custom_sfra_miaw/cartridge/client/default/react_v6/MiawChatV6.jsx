@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import ProductGrid from './ProductGrid';
 
 import { FaPaperPlane, FaSignOutAlt, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
-import './MiawChatV5.css';
+import './MiawChatV6.css';
 
 const MiawChatV5 = () => {
 	const [accessToken, setAccessToken] = useState(null);
