@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import ProductGrid from './ProductGrid';
 
@@ -152,13 +154,20 @@ const MiawChatV5 = () => {
 											console.log(`productIds: ${productIds}`);
 											if (productIds?.length > 0) setPids(productIds);
 
+											// const parsedContent = (
+											// 	<div>
+											// 		{conversationAnswer && (
+											// 			<span
+											// 				className='text-container'
+											// 				dangerouslySetInnerHTML={{ __html: conversationAnswer.replace(/\n/g, '<br/>') }}
+											// 			></span>
+											// 		)}
+											// 	</div>
+											// );
 											const parsedContent = (
-												<div>
+												<div className='text-container'>
 													{conversationAnswer && (
-														<span
-															className='text-container'
-															dangerouslySetInnerHTML={{ __html: conversationAnswer.replace(/\n/g, '<br/>') }}
-														></span>
+														<ReactMarkdown remarkPlugins={[remarkGfm]}>{conversationAnswer}</ReactMarkdown>
 													)}
 												</div>
 											);
@@ -169,7 +178,12 @@ const MiawChatV5 = () => {
 											parsedText = <span>{textValue}</span>;
 										}
 									} else {
-										parsedText = <span dangerouslySetInnerHTML={{ __html: textValue?.replace(/\n/g, '<br/>') }}></span>;
+										// parsedText = <span dangerouslySetInnerHTML={{ __html: textValue?.replace(/\n/g, '<br/>') }}></span>;
+										parsedText = (
+											<div className='text-container'>
+												<ReactMarkdown remarkPlugins={[remarkGfm]}>{textValue}</ReactMarkdown>
+											</div>
+										);
 									}
 
 									setMessages((prev) => [

@@ -88,6 +88,46 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/********************/
+/* Markdown styling */
+/********************/
+
+.text-container strong {
+	font-weight: bold;
+}
+
+.text-container ul,
+.text-container ol {
+	margin: 0.5em 0;
+	padding-left: 1.5em;
+}
+
+.text-container li {
+	margin-bottom: 0.3em;
+}
+
+.text-container p {
+	margin: 0 auto;
+}
+
+.text-container table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 1em;
+}
+
+.text-container th,
+.text-container td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	text-align: left;
+}
+
+.text-container th {
+	background-color: #f4f4f4;
+	font-weight: bold;
+}
+
 /************************/
 /* Chat input & buttons */
 /************************/
